@@ -52,7 +52,7 @@ func main() {
 	}
 
 	//Read the csv file and len
-	v := len(records)
+	v := len(records) - 1
 	i := 0
 	path := make([]s2.LatLng, 0, 2)
 
@@ -67,10 +67,11 @@ func main() {
 			last := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{0, 0, 255, 255}, 16.0)
 			ctx.AddObject(last)
 			path = append(path, last.Position)
+			ctx.SetCenter(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
 		}
 		fmt.Printf("TIME: %s, LAT: %s, LON: %s\n", record.TIME, record.LAT, record.LON)
 		// Add all others plots
-		path = append(path, s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
+		//path = append(path, s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
 		i = i + 1
 	}
 	fmt.Printf("Total path: %s\n", IntToString(len(path)))
