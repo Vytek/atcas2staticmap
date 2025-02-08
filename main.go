@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 
 	"image/color"
@@ -31,6 +30,10 @@ func StringToFloat64(data string) float64 {
 	}
 }
 
+func IntToString(n int) string {
+	return strconv.Itoa(n)
+}
+
 func main() {
 	// Open the CSV file
 	file, err := os.Open("1136-varie.csv")
@@ -49,7 +52,7 @@ func main() {
 	}
 
 	//Read the csv file and len
-	v := reflect.ValueOf(records)
+	v := len(records)
 	i := 0
 	path := make([]s2.LatLng, 0, 2)
 
@@ -60,7 +63,7 @@ func main() {
 			ctx.AddObject(first)
 			path = append(path, first.Position)
 		}
-		if i == v.NumField() {
+		if i == v {
 			last := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{0, 0, 255, 255}, 16.0)
 			ctx.AddObject(last)
 			path = append(path, last.Position)
@@ -70,6 +73,7 @@ func main() {
 		path = append(path, s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
 		i = i + 1
 	}
+	fmt.Printf("Total path: %s\n", IntToString(len(path)))
 	// Total path
 	ctx.AddObject(sm.NewPath(path, color.RGBA{0, 255, 0, 255}, 4.0))
 
