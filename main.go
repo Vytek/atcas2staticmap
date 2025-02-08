@@ -71,7 +71,7 @@ func main() {
 			last := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{0, 0, 255, 255}, 16.0)
 			ctx.AddObject(last)
 			path = append(path, last.Position)
-			ctx.SetCenter(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
+			//ctx.SetCenter(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
 			fmt.Printf("Last Lan, Lon: %f,%f\n", StringToFloat64(record.LAT), StringToFloat64(record.LON))
 		}
 		fmt.Printf("TIME: %s, LAT: %s, LON: %s\n", record.TIME, record.LAT, record.LON)
