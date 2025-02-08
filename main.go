@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"image/color"
 
@@ -23,9 +24,11 @@ type Record struct {
 }
 
 func StringToFloat64(data string) float64 {
+	data = strings.Replace(data, ",", ".", -1)
 	if s, err := strconv.ParseFloat(data, 64); err == nil {
 		return s
 	} else {
+		fmt.Println(err.Error())
 		return 0.0
 	}
 }
@@ -62,16 +65,18 @@ func main() {
 			first := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{255, 0, 0, 255}, 16.0)
 			ctx.AddObject(first)
 			path = append(path, first.Position)
+			fmt.Printf("First Lan, Lon: %f,%f\n", StringToFloat64(record.LAT), StringToFloat64(record.LON))
 		}
 		if i == v {
 			last := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{0, 0, 255, 255}, 16.0)
 			ctx.AddObject(last)
 			path = append(path, last.Position)
 			ctx.SetCenter(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
+			fmt.Printf("Last Lan, Lon: %f,%f\n", StringToFloat64(record.LAT), StringToFloat64(record.LON))
 		}
 		fmt.Printf("TIME: %s, LAT: %s, LON: %s\n", record.TIME, record.LAT, record.LON)
 		// Add all others plots
-		//path = append(path, s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
+		path = append(path, s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
 		i = i + 1
 	}
 	fmt.Printf("Total path: %s\n", IntToString(len(path)))
