@@ -60,7 +60,7 @@ func NewTextMarker(pos s2.LatLng, text string) *TextMarker {
 	s := new(TextMarker)
 	s.Position = pos
 	s.Text = text
-	s.TipSize = 8.0
+	s.TipSize = 16.0
 
 	d := &font.Drawer{
 		Face: basicfont.Face7x13,
@@ -144,22 +144,22 @@ func CreateTracksImage(csvPaths []string, outputImage string) error {
 			pos := s2.LatLngFromDegrees(lat, lon)
 
 			if i == 0 {
-				first := sm.NewMarker(pos, color.RGBA{0, 255, 0, 255}, 16.0)
-				ctx.AddObject(first)
-				path = append(path, first.Position)
 				FirstText := NewTextMarker(pos, record.TIME)
 				ctx.AddObject(FirstText)
+				first := sm.NewMarker(pos, color.RGBA{0, 255, 0, 255}, 4.0)
+				ctx.AddObject(first)
+				path = append(path, first.Position)
 			}
 			if i == v {
-				last := sm.NewMarker(pos, color.RGBA{255, 0, 0, 255}, 16.0)
-				ctx.AddObject(last)
-				path = append(path, last.Position)
 				LastText := NewTextMarker(pos, record.TIME)
 				ctx.AddObject(LastText)
+				last := sm.NewMarker(pos, color.RGBA{255, 0, 0, 255}, 4.0)
+				ctx.AddObject(last)
+				path = append(path, last.Position)
 			}
 			path = append(path, pos)
 		}
-		ctx.AddObject(sm.NewPath(path, color.RGBA{0, 255, 0, 128}, 4.0)) // semi-trasparente per più tracce
+		ctx.AddObject(sm.NewPath(path, color.RGBA{0, 255, 0, 255}, 4.0)) // semi-trasparente per più tracce
 	}
 
 	img, err := ctx.Render()
@@ -176,7 +176,7 @@ func CreateTracksImage(csvPaths []string, outputImage string) error {
 func main() {
 	csvFiles := []string{
 		"1136-varie.csv",
-		"altra-traccia.csv",
+		"1133-varie.csv",
 		// aggiungi altri file qui
 	}
 	err := CreateTracksImage(csvFiles, "tutte_le_tracce.png")
