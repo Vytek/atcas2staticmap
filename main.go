@@ -114,62 +114,73 @@ func (s *TextMarker) Draw(gc *gg.Context, trans *sm.Transformer) {
 	gc.DrawString(s.Text, x-s.TextWidth*0.5, y-s.TipSize-4.0)
 }
 
-func main() {
-	// Open the CSV file
-	file, err := os.Open("1136-varie.csv")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
+func CreateTracksImage(csvPaths []string, outputImage string) error {
 	ctx := sm.NewContext()
 	ctx.SetSize(1920, 1080)
 
-	// Read the CSV file into a slice of Record structs
-	var records []Record
-	if err := gocsv.UnmarshalFile(file, &records); err != nil {
-		panic(err)
-	}
-
-	//Read the csv file and len
-	v := len(records) - 1
-	i := 0
-	path := make([]s2.LatLng, 0, 2)
-
-	// Print the records
-	for _, record := range records {
-		if i == 0 {
-			first := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{0, 255, 0, 255}, 16.0)
-			ctx.AddObject(first)
-			path = append(path, first.Position)
-			fmt.Printf("First Lan, Lon: %f,%f\n", StringToFloat64(record.LAT), StringToFloat64(record.LON))
-			FirstText := NewTextMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), record.TIME)
-			ctx.AddObject(FirstText)
+	for _, csvPath := range csvPaths {
+		file, err := os.Open(csvPath)
+		if err != nil {
+			return fmt.Errorf("errore apertura file %s: %w", csvPath, err)
 		}
-		if i == v {
-			last := sm.NewMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), color.RGBA{255, 0, 0, 255}, 16.0)
-			ctx.AddObject(last)
-			path = append(path, last.Position)
-			//ctx.SetCenter(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
-			fmt.Printf("Last Lan, Lon: %f,%f\n", StringToFloat64(record.LAT), StringToFloat64(record.LON))
-			LastText := NewTextMarker(s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)), record.TIME)
-			ctx.AddObject(LastText)
+
+		var records []Record
+		if err := gocsv.UnmarshalFile(file, &records); err != nil {
+			file.Close()
+			return fmt.Errorf("errore parsing file %s: %w", csvPath, err)
 		}
-		fmt.Printf("TIME: %s, LAT: %s, LON: %s\n", record.TIME, record.LAT, record.LON)
-		// Add all others plots
-		path = append(path, s2.LatLngFromDegrees(StringToFloat64(record.LAT), StringToFloat64(record.LON)))
-		i = i + 1
+		file.Close()
+
+		if len(records) == 0 {
+			continue
+		}
+
+		v := len(records) - 1
+		path := make([]s2.LatLng, 0, len(records)+2)
+
+		for i, record := range records {
+			lat := StringToFloat64(record.LAT)
+			lon := StringToFloat64(record.LON)
+			pos := s2.LatLngFromDegrees(lat, lon)
+
+			if i == 0 {
+				first := sm.NewMarker(pos, color.RGBA{0, 255, 0, 255}, 16.0)
+				ctx.AddObject(first)
+				path = append(path, first.Position)
+				FirstText := NewTextMarker(pos, record.TIME)
+				ctx.AddObject(FirstText)
+			}
+			if i == v {
+				last := sm.NewMarker(pos, color.RGBA{255, 0, 0, 255}, 16.0)
+				ctx.AddObject(last)
+				path = append(path, last.Position)
+				LastText := NewTextMarker(pos, record.TIME)
+				ctx.AddObject(LastText)
+			}
+			path = append(path, pos)
+		}
+		ctx.AddObject(sm.NewPath(path, color.RGBA{0, 255, 0, 128}, 4.0)) // semi-trasparente per più tracce
 	}
-	fmt.Printf("Total path: %s\n", IntToString(len(path)))
-	// Total path
-	ctx.AddObject(sm.NewPath(path, color.RGBA{0, 255, 0, 255}, 4.0))
 
 	img, err := ctx.Render()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	if err := gg.SavePNG("1136.png", img); err != nil {
+	if err := gg.SavePNG(outputImage, img); err != nil {
+		return err
+	}
+	return nil
+}
+
+func main() {
+	csvFiles := []string{
+		"1136-varie.csv",
+		"altra-traccia.csv",
+		// aggiungi altri file qui
+	}
+	err := CreateTracksImage(csvFiles, "tutte_le_tracce.png")
+	if err != nil {
 		panic(err)
 	}
 }
