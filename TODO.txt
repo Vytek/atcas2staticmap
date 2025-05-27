@@ -1,0 +1,12 @@
+- Locale orario not ZULU
+- senza secondi
+- 19_59_45
+- zoom su dettaglio distanza bergamini e volo IH870
+- distanza minima con orario su volo 
+- Boeing 720
+- KM 153 segnare caduta orario e sua posizione al momento
+- sul dettaglio zoom IH779 - IH780
+- orari nella 
+- falsa traccia esercitazione Del Zoppo
+- Freccia in su KT881 in su, punto di caduta . Oraraio confornto nel momento caduta.
+- Eliminare Pezzopane e modelli aereis
