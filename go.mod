@@ -19,5 +19,6 @@ require (
 require (
 	github.com/flopp/go-staticmaps v0.0.0-20250206111937-47d062eaabce
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/vjeantet/jodaTime v1.0.0
 	golang.org/x/image v0.24.0 // indirect
 )

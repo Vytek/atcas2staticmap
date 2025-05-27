@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"image/color"
 
@@ -18,6 +19,7 @@ import (
 	sm "github.com/flopp/go-staticmaps"
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
+	"github.com/vjeantet/jodaTime"
 )
 
 type Record struct {
@@ -77,7 +79,7 @@ func NewTextMarker(pos s2.LatLng, text string) *TextMarker {
 	s := new(TextMarker)
 	s.Position = pos
 	s.Text = text
-	s.TipSize = 16.0
+	s.TipSize = 22.0
 
 	d := &font.Drawer{
 		Face: basicfont.Face7x13,
@@ -140,6 +142,7 @@ type TrackInput struct {
 func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 	ctx := sm.NewContext()
 	ctx.SetSize(1920, 1080)
+	ctx.SetCenter(s2.LatLngFromDegrees(41.0, 12.0)) // Centro dell'Italia
 
 	for _, track := range tracks {
 		file, err := os.Open(track.FilePath)
@@ -171,11 +174,11 @@ func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 		} else if flight == "1132" {
 			StrToShow = "ATI BM300 (Trieste-Roma) 1132"
 		} else if flight == "0225" {
-			StrToShow = "B727 I-DIRU (Pezzopane) Alitalia AZ865 (Tunisi-Fiumicino) 0225"
+			StrToShow = "B727 I-DIRU Alitalia AZ865 (Tunisi-Fiumicino) 0225"
 		} else if flight == "0226" {
 			StrToShow = "Bea Tours KT881 (Malta-Londra) 0226"
 		} else if flight == "1235" {
-			StrToShow = "Boing 720 Air Malta KM153 (Londra-Malta) 1235"
+			StrToShow = "Boeing 720 Air Malta KM153 (Londra-Malta) 1235"
 		} else if flight == "4200" {
 			StrToShow = "TF-104G (20-4 MM54230) Bergamini/Moretti (Intermedia 8)"
 		} else {
@@ -188,19 +191,43 @@ func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 			pos := s2.LatLngFromDegrees(lat, lon)
 
 			if i == 0 {
-				FirstText := NewTextMarker(pos, record.TIME+" "+StrToShow)
+				StarTime, _ := jodaTime.Parse("HH:mm:ss", record.TIME)
+				StartTimeUTC := StarTime.Add(time.Hour * 2) // Aggiungi 2 ore per UTC+2
+				StarTimeFinal := jodaTime.Format("HH:mm", StartTimeUTC)
+				FirstText := NewTextMarker(pos, StarTimeFinal+" "+StrToShow)
 				ctx.AddObject(FirstText)
 				first := sm.NewMarker(pos, color.RGBA{0, 255, 0, 255}, 8.0)
 				ctx.AddObject(first)
 				path = append(path, first.Position)
 			}
 			if i == v {
-				LastText := NewTextMarker(pos, record.TIME)
+				EndTime, _ := jodaTime.Parse("HH:mm:ss", record.TIME)
+				EndTimeUTC := EndTime.Add(time.Hour * 2) // Aggiungi 2 ore per UTC+2
+				EndTimeFinal := jodaTime.Format("HH:mm", EndTimeUTC)
+				if flight == "1136" {
+					StrToShow = "Ultima posizione nota: " + EndTimeFinal
+				} else {
+					StrToShow = EndTimeFinal
+				}
+				LastText := NewTextMarker(pos, StrToShow)
 				ctx.AddObject(LastText)
 				last := sm.NewMarker(pos, color.RGBA{255, 0, 0, 255}, 8.0)
 				ctx.AddObject(last)
 				path = append(path, last.Position)
 			}
+			if record.TIME == "18:59:45" && flight != "1136" {
+				// Aggiungi un marker speciale per il tempo 18:59:45
+				fmt.Print("Special time found: ", record.TIME, " at position: ", pos.String(), "\n")
+				specialTime, _ := jodaTime.Parse("HH:mm:ss", record.TIME)
+				specialTimeUTC := specialTime.Add(time.Hour * 2) // Aggiungi 2 ore per UTC+2
+				specialTimeFinal := jodaTime.Format("HH:mm", specialTimeUTC)
+				specialText := NewTextMarker(pos, "Posizione velivolo rispetto DC9 "+specialTimeFinal)
+				ctx.AddObject(specialText)
+				specialMarker := sm.NewMarker(pos, color.RGBA{255, 255, 0, 255}, 8.0)
+				ctx.AddObject(specialMarker)
+				path = append(path, specialMarker.Position)
+			}
+			// Aggiungi il marker per ogni posizione
 			path = append(path, pos)
 		}
 		// Usa il colore specificato per la traccia
