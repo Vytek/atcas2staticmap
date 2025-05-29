@@ -142,7 +142,8 @@ type TrackInput struct {
 func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 	ctx := sm.NewContext()
 	ctx.SetSize(1920, 1080)
-	ctx.SetCenter(s2.LatLngFromDegrees(41.0, 12.0)) // Centro dell'Italia
+	ctx.SetCenter(s2.LatLngFromDegrees(41.1742524, 12.6131039)) // Centro dell'Italia
+	ctx.SetZoom(8)
 
 	for _, track := range tracks {
 		file, err := os.Open(track.FilePath)

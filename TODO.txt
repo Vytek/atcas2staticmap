@@ -1,10 +1,10 @@
 X Locale orario non ZULU
 X Eliminare tutti i secondi dai vari orari
 - 19_59_45
-- zoom su dettaglio distanza bergamini e volo IH870
+X zoom su dettaglio distanza bergamini e volo IH870
 - distanza minima con orario su volo 
 X Modificare a Boeing 720
-- KM 153 segnare caduta orario e sua posizione al momento
+X KM 153 segnare caduta orario e sua posizione al momento
 - sul dettaglio zoom IH779 - IH780
 - orari nella 
 - falsa traccia esercitazione Del Zoppo
