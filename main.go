@@ -142,8 +142,9 @@ type TrackInput struct {
 func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 	ctx := sm.NewContext()
 	ctx.SetSize(1920, 1080)
-	ctx.SetCenter(s2.LatLngFromDegrees(41.1742524, 12.6131039)) // Centro dell'Italia
-	ctx.SetZoom(8)
+	//ctx.SetCenter(s2.LatLngFromDegrees(41.1742524, 12.6131039)) // Centro dell'Italia
+	ctx.SetCenter(s2.LatLngFromDegrees(43.77925, 11.2462699)) // Firenze
+	ctx.SetZoom(10)
 
 	for _, track := range tracks {
 		file, err := os.Open(track.FilePath)
@@ -169,7 +170,7 @@ func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 		var StrToShow string
 		flight := substr(track.FilePath, 0, 4)
 		if flight == "1136" {
-			StrToShow = "DC9 ITAVIA IH870 (Bologna-Palermo) 1136"
+			StrToShow = "DC9 ITAVIA IH870 (Bologna-Palermo)"
 		} else if flight == "1133" {
 			StrToShow = "Fokker 28 ITAVIA IH779 (Bergamo-Roma) 1133"
 		} else if flight == "1132" {
@@ -181,7 +182,7 @@ func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 		} else if flight == "1235" {
 			StrToShow = "Boeing 720 Air Malta KM153 (Londra-Malta) 1235"
 		} else if flight == "4200" {
-			StrToShow = "TF-104G (20-4 MM54230) Bergamini/Moretti (Intermedia 8)"
+			StrToShow = "TF-104G Bergamini/Moretti"
 		} else {
 			StrToShow = "Unknown"
 		}
@@ -232,7 +233,8 @@ func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 			path = append(path, pos)
 		}
 		// Usa il colore specificato per la traccia
-		ctx.AddObject(sm.NewPath(path, track.Color, 4.0))
+		filteredPath := applyKalmanFilter(path)
+		ctx.AddObject(sm.NewPath(filteredPath, track.Color, 4.0))
 	}
 
 	img, err := ctx.Render()
@@ -256,6 +258,44 @@ func HexToRGBA(hex string) color.RGBA {
 		r, g, b = uint8(ri), uint8(gi), uint8(bi)
 	}
 	return color.RGBA{r, g, b, 255}
+}
+
+// KalmanFilter monodimensionale
+type KalmanFilter struct {
+	x, p, q, r, k float64
+}
+
+func NewKalmanFilter(q, r, initialValue float64) *KalmanFilter {
+	return &KalmanFilter{
+		x: initialValue,
+		p: 1.0,
+		q: q,
+		r: r,
+	}
+}
+
+func (kf *KalmanFilter) Update(measurement float64) float64 {
+	kf.p += kf.q
+	kf.k = kf.p / (kf.p + kf.r)
+	kf.x = kf.x + kf.k*(measurement-kf.x)
+	kf.p = (1 - kf.k) * kf.p
+	return kf.x
+}
+
+// Applica il filtro di Kalman a una slice di s2.LatLng
+func applyKalmanFilter(points []s2.LatLng) []s2.LatLng {
+	if len(points) == 0 {
+		return nil
+	}
+	kfLat := NewKalmanFilter(0.00001, 0.0001, points[0].Lat.Degrees())
+	kfLng := NewKalmanFilter(0.00001, 0.0001, points[0].Lng.Degrees())
+	filtered := make([]s2.LatLng, 0, len(points))
+	for _, pt := range points {
+		lat := kfLat.Update(pt.Lat.Degrees())
+		lng := kfLng.Update(pt.Lng.Degrees())
+		filtered = append(filtered, s2.LatLngFromDegrees(lat, lng))
+	}
+	return filtered
 }
 
 func main() {
