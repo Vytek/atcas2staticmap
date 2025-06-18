@@ -141,10 +141,11 @@ type TrackInput struct {
 // Modifica la funzione per accettare []TrackInput invece di []string
 func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 	ctx := sm.NewContext()
-	ctx.SetSize(1920, 1080)
+	ctx.SetSize(2560, 1440)
 	//ctx.SetCenter(s2.LatLngFromDegrees(41.1742524, 12.6131039)) // Centro dell'Italia
-	ctx.SetCenter(s2.LatLngFromDegrees(43.77925, 11.2462699)) // Firenze
-	ctx.SetZoom(10)
+	//ctx.SetCenter(s2.LatLngFromDegrees(43.77925, 11.2462699)) // Firenze
+	ctx.SetCenter(s2.LatLngFromDegrees(41.902782, 12.496366)) // Roma
+	ctx.SetZoom(8)
 
 	for _, track := range tracks {
 		file, err := os.Open(track.FilePath)
@@ -174,13 +175,13 @@ func CreateTracksImage(tracks []TrackInput, outputImage string) error {
 		} else if flight == "1133" {
 			StrToShow = "Fokker 28 ITAVIA IH779 (Bergamo-Roma) 1133"
 		} else if flight == "1132" {
-			StrToShow = "ATI BM300 (Trieste-Roma) 1132"
+			StrToShow = "ATI BM300 (Trieste-Roma)"
 		} else if flight == "0225" {
-			StrToShow = "B727 I-DIRU Alitalia AZ865 (Tunisi-Fiumicino) 0225"
+			StrToShow = "Alitalia AZ865 (Tunisi-Fiumicino)"
 		} else if flight == "0226" {
-			StrToShow = "Bea Tours KT881 (Malta-Londra) 0226"
+			StrToShow = "Bea Tours KT881 (Malta-Londra)"
 		} else if flight == "1235" {
-			StrToShow = "Boeing 720 Air Malta KM153 (Londra-Malta) 1235"
+			StrToShow = "Air Malta KM153 (Londra-Malta)"
 		} else if flight == "4200" {
 			StrToShow = "TF-104G Bergamini/Moretti"
 		} else {
